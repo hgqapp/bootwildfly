@@ -1,2 +1,16 @@
+spring:
+  profiles:
+    active: dev
+  jpa:
+    show-sql: true
+  resources:
+    add-mappings: true
+  mvc:
+    static-path-pattern: /**
+
 logging:
-  level: debug
+  level:
+    root: info
+    bootwildfly: debug
+    org.apache.http: debug
+    org.apache.http.impl.conn.PoolingHttpClientConnectionManager: info

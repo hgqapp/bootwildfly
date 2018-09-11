@@ -92,16 +92,4 @@ public class MiMiApi {
         return headers.stream().collect(Collectors.toMap(HeaderModel::getKey, HeaderModel::getValue));
     }
 
-    private static Set<String> ignoreHeader = new HashSet<>();
-    static {
-        ignoreHeader.add("accept-encoding");
-    }
-    private static Map<String, String> parseHeaders(String headers) {
-        return Arrays.stream(headers.split("\n"))
-                .map(v -> v.trim().split(":\\s*"))
-                .filter(v -> v.length == 2 && !ignoreHeader.contains(v[0]))
-                .collect(Collectors.toMap(v->v[0], v->v[1]));
-
-    }
-
 }

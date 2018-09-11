@@ -51,7 +51,7 @@ public class UserController {
         }));
         Iterable<UserModel> users = userService.getAllUsers();
         model.addAttribute("users", users);
-        return "user/index";
+        return "redirect:index";
     }
 
     @Transactional(rollbackFor = Exception.class)

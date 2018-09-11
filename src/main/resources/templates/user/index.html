@@ -61,6 +61,7 @@
                 </td>
                 <td th:text="${item.msg}"></td>
                 <td th:if="${item.msgTime != null}" th:text="${#dates.format(item.msgTime, 'yyyy-MM-dd hh:mm:ss')}"></td>
+                <td th:if="${item.msgTime == null}"></td>
             </tr>
             </tbody>
         </table>

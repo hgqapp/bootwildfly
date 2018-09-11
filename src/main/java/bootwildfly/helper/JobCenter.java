@@ -25,7 +25,7 @@ public class JobCenter {
     private UserService userService;
 
 
-    @Scheduled(initialDelay = 10000, fixedRate = 1000*20)
+    @Scheduled(cron = "0 0/20 * * * ?")
     public void gacheck() {
         Iterable<HeaderModel> headers = userService.getAllHeaders();
         Map<Long, Map<String, String>> result = StreamSupport.stream(headers.spliterator(), false)

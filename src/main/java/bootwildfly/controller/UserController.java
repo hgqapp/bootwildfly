@@ -1,10 +1,9 @@
 package bootwildfly.controller;
 
-import bootwildfly.consts.Constants;
-import bootwildfly.dao.HeaderDao;
-import bootwildfly.dao.UserDao;
+import bootwildfly.helper.MiMiApi;
 import bootwildfly.model.HeaderModel;
 import bootwildfly.model.UserModel;
+import bootwildfly.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.*;
+import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author houguangqiang
@@ -27,77 +28,39 @@ import java.util.stream.Collectors;
 public class UserController {
 
     @Autowired
-    private UserDao userDao;
+    private UserService userService;
     @Autowired
-    private HeaderDao headerDao;
-
-    @GetMapping("/add")
-    public String add(Model model) {
-        Iterable<UserModel> users = userDao.findAll();
-        model.addAttribute("users", users);
-        return "user/index";
-    }
-
+    private Executor executor;
 
     @GetMapping("/index")
     public String index(Model model) {
-        Iterable<UserModel> users = userDao.findAll();
+        Iterable<UserModel> users = userService.getAllUsers();
         model.addAttribute("users", users);
         return "user/index";
     }
 
+    @GetMapping("/checkin")
+    public String checkin(Model model) {
+        Iterable<HeaderModel> headers = userService.getAllHeaders();
+        Map<Long, Map<String, String>> result = StreamSupport.stream(headers.spliterator(), false)
+                .collect(Collectors.groupingBy(HeaderModel::getUid,
+                        Collectors.toMap(HeaderModel::getKey, HeaderModel::getValue)));
+        result.forEach((k, v) -> executor.execute(() -> {
+            String msg = MiMiApi.checkin(v);
+            userService.updateMsgAndMsgTimeByUid(k, msg, System.currentTimeMillis());
+        }));
+        Iterable<UserModel> users = userService.getAllUsers();
+        model.addAttribute("users", users);
+        return "user/index";
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/add")
     public String add(@RequestParam String headers, Model model) {
-        Long uid = parseUid(headers);
-        String email = parseEmail(headers);
-        UserModel user = new UserModel(uid, email, headers);
-        userDao.save(user);
-        List<HeaderModel> headerModels = parseHeaders(uid, headers);
-        headerDao.save(headerModels);
-        Iterable<UserModel> users = userDao.findAll();
+        userService.addUser(headers);
+        Iterable<UserModel> users = userService.getAllUsers();
         model.addAttribute("users", users);
-        return "redirect:add";
-    }
-
-
-
-
-    private static Set<String> ignoreHeader = new HashSet<>();
-
-    static {
-        ignoreHeader.add("accept-encoding");
-    }
-
-    private List<HeaderModel> parseHeaders(Long uid, String headers) {
-        return Arrays.stream(headers.split("\n"))
-                .map(v -> v.trim().split(":\\s*"))
-                .filter(v -> v.length == 2 && !ignoreHeader.contains(v[0]))
-                .map(v -> new HeaderModel(v[0], v[1], uid))
-                .collect(Collectors.toList());
-
-    }
-
-    private Long parseUid(String headers) {
-        try {
-            int start = headers.indexOf(Constants.COOKIE_UID_KEY_INDEX) + Constants.COOKIE_UID_KEY_INDEX.length();
-            int end = headers.indexOf(';', start);
-            return Long.valueOf(headers.substring(start, end));
-        } catch (Exception e) {
-            throw new NullPointerException("Not support headers!!!");
-        }
-    }
-
-    private String parseEmail(String headers) {
-        try {
-            int start = headers.indexOf(Constants.COOKIE_EMAIL_KEY_INDEX) + Constants.COOKIE_EMAIL_KEY_INDEX.length();
-            int end = headers.indexOf(';', start);
-            return headers.substring(start, end).replace("%40","@");
-        } catch (Exception e) {
-            throw new NullPointerException("Not support headers!!!");
-        }
-
+        return "redirect:index";
     }
 
 }

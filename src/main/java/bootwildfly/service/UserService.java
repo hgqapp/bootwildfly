@@ -1,19 +1,13 @@
 package bootwildfly.service;
 
+import bootwildfly.UserRepository;
 import bootwildfly.consts.Constants;
-import bootwildfly.dao.HeaderDao;
-import bootwildfly.dao.UserDao;
 import bootwildfly.model.HeaderModel;
 import bootwildfly.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -25,36 +19,30 @@ import java.util.stream.Collectors;
 public class UserService {
 
     @Autowired
-    private UserDao userDao;
-    @Autowired
-    private HeaderDao headerDao;
+    private UserRepository userRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public int updateMsgAndMsgTimeByUid(Long uid, String msg, Long msgTime) {
-        return userDao.updateMsgAndMsgTimeByUid(uid, msg, msgTime);
+    public void updateMsgAndMsgTimeByUid(Long uid, String msg, Long msgTime) {
+        userRepository.updateMsgAndMsgTimeByUid(uid, msg, msgTime);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public void deleteByUid(Long uid) {
-        userDao.delete(uid);
-        headerDao.deleteByUid(uid);
+        userRepository.delete(uid);
     }
 
-    public Iterable<HeaderModel> getAllHeaders() {
-        return headerDao.findAll();
+    public Map<Long, List<HeaderModel>> getAllUserHeaders() {
+        return userRepository.getAllUserHeaders();
     }
 
     public Iterable<UserModel> getAllUsers() {
-        return userDao.findAll();
+        return userRepository.getAllUsers();
     }
 
-    public void addUser(String headers) {
+    public void saveUser(String headers) {
         Long uid = parseUid(headers);
         String email = parseEmail(headers);
         UserModel user = new UserModel(uid, email, headers);
-        userDao.save(user);
         List<HeaderModel> headerModels = parseHeaders(uid, headers);
-        headerDao.save(headerModels);
+        userRepository.saveUser(user, headerModels);
     }
 
     private static Set<String> ignoreHeader = new HashSet<>();

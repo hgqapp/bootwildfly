@@ -4,8 +4,6 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.validation.constraints.Min;
 
 /**
@@ -14,10 +12,8 @@ import javax.validation.constraints.Min;
  * @since 1.0
  */
 
-@Entity
 public class UserModel {
 
-    @Id
     @Min(0)
     private Long uid;
     @NotBlank @Email

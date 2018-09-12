@@ -15,7 +15,6 @@ import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Arrays;
 import java.util.concurrent.Executor;
@@ -23,7 +22,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableTransactionManagement
 public class Application extends SpringBootServletInitializer {
 
     private static final long CONNECTION_TIMEOUT = 10000;

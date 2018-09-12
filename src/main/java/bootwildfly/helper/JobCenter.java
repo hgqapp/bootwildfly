@@ -6,10 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * @author houguangqiang
@@ -27,11 +26,8 @@ public class JobCenter {
 
     @Scheduled(cron = "0 0/20 * * * ?")
     public void gacheck() {
-        Iterable<HeaderModel> headers = userService.getAllHeaders();
-        Map<Long, Map<String, String>> result = StreamSupport.stream(headers.spliterator(), false)
-                .collect(Collectors.groupingBy(HeaderModel::getUid,
-                        Collectors.toMap(HeaderModel::getKey, HeaderModel::getValue)));
-        result.forEach((k, v) -> executor.execute(() -> {
+        Map<Long, List<HeaderModel>> allUserHeaders = userService.getAllUserHeaders();
+        allUserHeaders.forEach((k, v) -> executor.execute(() -> {
             boolean checked = MiMiApi.gacheck(v);
             if (!checked) {
                 userService.deleteByUid(k);
@@ -41,11 +37,8 @@ public class JobCenter {
 
     @Scheduled(cron = "0 0 1 * * ?")
     public void checkin() {
-        Iterable<HeaderModel> headers = userService.getAllHeaders();
-        Map<Long, Map<String, String>> result = StreamSupport.stream(headers.spliterator(), false)
-                .collect(Collectors.groupingBy(HeaderModel::getUid,
-                        Collectors.toMap(HeaderModel::getKey, HeaderModel::getValue)));
-        result.forEach((k, v) -> executor.execute(() -> {
+        Map<Long, List<HeaderModel>> allUserHeaders = userService.getAllUserHeaders();
+        allUserHeaders.forEach((k, v) -> executor.execute(() -> {
             String msg = MiMiApi.checkin(v);
             userService.updateMsgAndMsgTimeByUid(k, msg, System.currentTimeMillis());
         }));

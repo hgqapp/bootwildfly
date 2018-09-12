@@ -3,7 +3,6 @@ package bootwildfly.model;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -12,10 +11,8 @@ import javax.validation.constraints.NotNull;
  * @date 2018-09-10
  * @since 1.0
  */
-@Entity
 public class HeaderModel {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotBlank @Length(min = 1, max = 50)
     private String key;

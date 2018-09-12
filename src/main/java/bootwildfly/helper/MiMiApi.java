@@ -9,7 +9,9 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +42,10 @@ public class MiMiApi {
             }
         } catch (UnirestException e) {
             logger.error("Error request: https://v3.mimi.ooo/user/checkin", e);
+            Throwable cause = e.getCause();
+            if (cause instanceof UnknownHostException) {
+                return cause.getMessage();
+            }
         }
         return null;
     }
@@ -63,6 +69,9 @@ public class MiMiApi {
             }
         } catch (UnirestException e) {
             logger.error("Error request: https://v3.mimi.ooo/user/gacheck", e);
+            if (e.getCause() instanceof UnknownHostException) {
+                return true;
+            }
         }
         return false;
     }

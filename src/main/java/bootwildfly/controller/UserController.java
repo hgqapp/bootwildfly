@@ -6,11 +6,9 @@ import bootwildfly.model.UserModel;
 import bootwildfly.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
@@ -32,14 +30,14 @@ public class UserController {
     @Autowired
     private Executor executor;
 
-    @GetMapping("/index")
+    @RequestMapping(value = "/index", method = RequestMethod.GET)
     public String index(Model model) {
         Iterable<UserModel> users = userService.getAllUsers();
         model.addAttribute("users", users);
         return "user/index";
     }
 
-    @GetMapping("/checkin")
+    @RequestMapping(value = "/checkin", method = RequestMethod.GET)
     public String checkin(Model model) {
         Iterable<HeaderModel> headers = userService.getAllHeaders();
         Map<Long, Map<String, String>> result = StreamSupport.stream(headers.spliterator(), false)
@@ -54,8 +52,7 @@ public class UserController {
         return "redirect:index";
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    @PostMapping(value = "/add")
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
     public String add(@RequestParam String headers, Model model) {
         userService.addUser(headers);
         Iterable<UserModel> users = userService.getAllUsers();
